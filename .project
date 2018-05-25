@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>astroids</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>src/Asteroids.class</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/OneDrive/Desktop/Asteroids%20(1)/Asteroids.class</locationURI>
+		</link>
+		<link>
+			<name>src/AsteroidsSprite.class</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/OneDrive/Desktop/Asteroids%20(1)/AsteroidsSprite.class</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>
