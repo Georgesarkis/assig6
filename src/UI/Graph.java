@@ -15,7 +15,7 @@ import java.awt.image.ImageObserver;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import Application.Asteroids;
+import Application.info;
 import Application.information;
 import Domain.missle;
 import Domain.ship;
@@ -24,10 +24,10 @@ import Domain.ufo;
 public class Graph {
 	  information info = new information();
 	  public void getNumStars(int numstars) {
-		  info.setNumStars(numstars);
+		  info.numStars = numstars;
 	  }
 	  public void getStars(Point [] star) {
-		  info.setStars(star);
+		  info.stars = star;
 	  }
 
 
@@ -42,158 +42,159 @@ public class Graph {
 
 		    // Create the off screen graphics context, if no good one exists.
 
-		    if (offGraphics == null || d.width != offDimension.width || d.height != offDimension.height) {
-		      offDimension = d;
-		      offImage = createImage(d.width, d.height);
-		      offGraphics = offImage.getGraphics();
+		    if (info.offGraphics == null || d.width != info.offDimension.width || d.height !=info.offDimension.height) {
+		    	info.offDimension = d;
+		    	info.offImage = Asteroids.createImage(d.width, d.height);
+		      info.offGraphics = info.offImage.getGraphics();
 		    }
 
 		    // Fill in background and stars.
 
-		    offGraphics.setColor(Color.black);
-		    offGraphics.fillRect(0, 0, d.width, d.height);
-		    if (detail) {
-		      offGraphics.setColor(Color.white);
-		      for (i = 0; i < numStars; i++)
-		        offGraphics.drawLine(stars[i].x, stars[i].y, stars[i].x, stars[i].y);
+		    info.offGraphics.setColor(Color.black);
+		    info.offGraphics.fillRect(0, 0, d.width, d.height);
+		    if (info.detail) {
+		      info.offGraphics.setColor(Color.white);
+		      for (i = 0; i < info.numStars; i++)
+		        info.offGraphics.drawLine(info.stars[i].x, info.stars[i].y, info.stars[i].x, info.stars[i].y);
 		    }
 
 		    // Draw photon bullets.
 
-		    offGraphics.setColor(Color.white);
-		    for (i = 0; i < Asteroids.MAX_SHOTS; i++)
-		      if (photons[i].active)
-		        offGraphics.drawPolygon(photons[i].sprite);
+		    info.offGraphics.setColor(Color.white);
+		    for (i = 0; i < info.MAX_SHOTS; i++)
+		      if (info.photons[i].active)
+		        info.offGraphics.drawPolygon(info.photons[i].sprite);
 
 		    // Draw the guided missle, counter is used to quickly fade color to black
 		    // when near expiration.
 
-		    c = Math.min(Asteroids.missleCounter * 24, 255);
-		    offGraphics.setColor(new Color(c, c, c));
-		    if (missle.active) {
-		      offGraphics.drawPolygon(missle.sprite);
-		      offGraphics.drawLine(Application.sprite.xpoints[Application.sprite.npoints - 1], Application.sprite.ypoints[Application.sprite.npoints - 1],
+		    c = Math.min(info.missleCounter * 24, 255);
+		    info.offGraphics.setColor(new Color(c, c, c));
+		    if (info.missle.active) {
+		      info.offGraphics.drawPolygon(info.missle.sprite);
+		      info.offGraphics.drawLine(Application.sprite.xpoints[Application.sprite.npoints - 1], Application.sprite.ypoints[Application.sprite.npoints - 1],
 		                           Application.sprite.xpoints[0], Application.sprite.ypoints[0]);
 		    }
 
-		    // Draw the asteroids.
+		    // Draw the info.
 
-		    for (i = 0; i < Asteroids.MAX_ROCKS; i++)
-		      if (asteroids[i].active) {
-		        if (Asteroids.detail) {
-		          offGraphics.setColor(Color.black);
-		          offGraphics.fillPolygon(asteroids[i].sprite);
+		    for (i = 0; i < info.MAX_ROCKS; i++)
+		      if (info.active) {
+		        if (info.detail) {
+		          info.offGraphics.setColor(Color.black);
+		          info.offGraphics.fillPolygon(info[i].sprite);
 		        }
-		        offGraphics.setColor(Color.white);
-		        offGraphics.drawPolygon(asteroids[i].sprite);
-		        offGraphics.drawLine(asteroids[i].sprite.xpoints[asteroids[i].sprite.npoints - 1], asteroids[i].sprite.ypoints[asteroids[i].sprite.npoints - 1],
-		                             asteroids[i].sprite.xpoints[0], asteroids[i].sprite.ypoints[0]);
+		        info.offGraphics.setColor(Color.white);
+		        info.offGraphics.drawPolygon(Asteroids[i].sprite);
+		        info.offGraphics.drawLine(Asteroids[i].sprite.xpoints[Asteroids[i].sprite.npoints - 1], Asteroids[i].sprite.ypoints[Asteroids[i].sprite.npoints - 1],
+		        		Asteroids[i].sprite.xpoints[0], Asteroids[i].sprite.ypoints[0]);
 		      }
 
 		    // Draw the flying saucer.
 
-		    if (ufo.active) {
-		      if (Asteroids.detail) {
-		        offGraphics.setColor(Color.black);
-		        offGraphics.fillPolygon(ufo.sprite);
+		    if (info.ufo.active) {
+		      if (info.detail) {
+		        info.offGraphics.setColor(Color.black);
+		        info.offGraphics.fillPolygon(info.ufo.sprite);
 		      }
-		      offGraphics.setColor(Color.white);
-		      offGraphics.drawPolygon(ufo.sprite);
-		      offGraphics.drawLine(Application.sprite.xpoints[Application.sprite.npoints - 1], Application.sprite.ypoints[Application.sprite.npoints - 1],
+		      info.offGraphics.setColor(Color.white);
+		      info.offGraphics.drawPolygon(info.ufo.sprite);
+		      info.offGraphics.drawLine(Application.sprite.xpoints[Application.sprite.npoints - 1], Application.sprite.ypoints[Application.sprite.npoints - 1],
 		                           Application.sprite.xpoints[0], Application.sprite.ypoints[0]);
 		    }
 
 		    // Draw the ship, counter is used to fade color to white on hyperspace.
 
-		    c = 255 - (255 / Asteroids.HYPER_COUNT) * Asteroids.hyperCounter;
-		    if (ship.active) {
-		      if (Asteroids.detail && Asteroids.hyperCounter == 0) {
-		        offGraphics.setColor(Color.black);
-		        offGraphics.fillPolygon(ship.sprite);
+		    c = 255 - (255 / info.HYPER_COUNT) * info.hyperCounter;
+		    if (info.ship.active) {
+		      if (info.detail && info.hyperCounter == 0) {
+		        info.offGraphics.setColor(Color.black);
+		        info.offGraphics.fillPolygon(info.ship.sprite);
 		      }
-		      offGraphics.setColor(new Color(c, c, c));
-		      offGraphics.drawPolygon(ship.sprite);
-		      offGraphics.drawLine(Application.sprite.xpoints[Application.sprite.npoints - 1], Application.sprite.ypoints[Application.sprite.npoints - 1],
+		      info.offGraphics.setColor(new Color(c, c, c));
+		      info.offGraphics.drawPolygon(info.ship.sprite);
+		      info.offGraphics.drawLine(Application.sprite.xpoints[Application.sprite.npoints - 1], Application.sprite.ypoints[Application.sprite.npoints - 1],
 		                           Application.sprite.xpoints[0], Application.sprite.ypoints[0]);
 
 		      // Draw thruster exhaust if thrusters are on. Do it randomly to get a
 		      // flicker effect.
 
-		      if (!Asteroids.paused && Asteroids.detail && Math.random() < 0.5) {
-		        if (up) {
-		          offGraphics.drawPolygon(fwdThruster.sprite);
-		          offGraphics.drawLine(fwdThruster.sprite.xpoints[fwdThruster.sprite.npoints - 1], fwdThruster.sprite.ypoints[fwdThruster.sprite.npoints - 1],
-		                               fwdThruster.sprite.xpoints[0], fwdThruster.sprite.ypoints[0]);
+		      if (!info.paused && info.detail && Math.random() < 0.5) {
+		        if (info.up) {
+		          info.offGraphics.drawPolygon(info.fwdThruster.sprite);
+		          info.offGraphics.drawLine(info.fwdThruster.sprite.xpoints[info.fwdThruster.sprite.npoints - 1], info.fwdThruster.sprite.ypoints[info.fwdThruster.sprite.npoints - 1],
+		                               info.fwdThruster.sprite.xpoints[0], info.fwdThruster.sprite.ypoints[0]);
 		        }
-		        if (down) {
-		          offGraphics.drawPolygon(revThruster.sprite);
-		          offGraphics.drawLine(revThruster.sprite.xpoints[revThruster.sprite.npoints - 1], revThruster.sprite.ypoints[revThruster.sprite.npoints - 1],
-		                               revThruster.sprite.xpoints[0], revThruster.sprite.ypoints[0]);
+		        if (info.down) {
+		          info.offGraphics.drawPolygon(info.revThruster.sprite);
+		          info.offGraphics.drawLine(info.revThruster.sprite.xpoints[info.revThruster.sprite.npoints - 1], info.revThruster.sprite.ypoints[info.revThruster.sprite.npoints - 1],
+		                               info.revThruster.sprite.xpoints[0], info.revThruster.sprite.ypoints[0]);
 		        }
 		      }
 		    }
 
 		    // Draw any explosion debris, counters are used to fade color to black.
 
-		    for (i = 0; i < Asteroids.MAX_SCRAP; i++)
-		      if (explosions[i].active) {
-		        c = (255 / Asteroids.SCRAP_COUNT) * Asteroids.explosionCounter [i];
-		        offGraphics.setColor(new Color(c, c, c));
-		        offGraphics.drawPolygon(explosions[i].sprite);
+		    for (i = 0; i < info.MAX_SCRAP; i++)
+		      if (info.explosions[i].active) {
+		        c = (255 / info.SCRAP_COUNT) * info.explosionCounter [i];
+		        info.offGraphics.setColor(new Color(c, c, c));
+		        info.offGraphics.drawPolygon(info.explosions[i].sprite);
 		      }
 
 		    // Display status and messages.
 
-		    offGraphics.setFont(font);
-		    offGraphics.setColor(Color.white);
+		    info.offGraphics.setFont(info.font);
+		    info.offGraphics.setColor(Color.white);
 
-		    offGraphics.drawString("Score: " + Asteroids.score, fontWidth, fontHeight);
-		    offGraphics.drawString("Ships: " + Asteroids.shipsLeft, fontWidth, d.height - fontHeight);
-		    s = "High: " + Asteroids.highScore;
-		    offGraphics.drawString(s, d.width - (fontWidth + fm.stringWidth(s)), fontHeight);
-		    if (!Asteroids.sound) {
+		    info.offGraphics.drawString("Score: " + info.score, info.fontWidth, info.fontHeight);
+		    info.offGraphics.drawString("Ships: " + info.shipsLeft, info.fontWidth, d.height - info.fontHeight);
+		    s = "High: " + info.highScore;
+		    info.offGraphics.drawString(s, d.width - (info.fontWidth + info.fm.stringWidth(s)), info.fontHeight);
+		    if (!info.sound) {
 		      s = "Mute";
-		      offGraphics.drawString(s, d.width - (fontWidth + fm.stringWidth(s)), d.height - fontHeight);
+		      info.offGraphics.drawString(s, d.width - (info.fontWidth + info.fm.stringWidth(s)), d.height - info.fontHeight);
 		    }
 
-		    if (!Asteroids.playing) {
-		      s = copyName;
-		      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 - 2 * fontHeight);
-		      s = copyVers;
-		      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 - fontHeight);
-		      s = copyInfo;
-		      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 + fontHeight);
-		      s = copyLink;
-		      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 + 2 * fontHeight);
-		      if (!Asteroids.loaded) {
+		    if (!info.playing) {
+		      s = info.copyName;
+		      info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 2 - 2 * info.fontHeight);
+		      s = info.copyVers;
+		      info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 2 - info.fontHeight);
+		      s = info.copyInfo;
+		      info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 2 + info.fontHeight);
+		      s = info.copyLink;
+		      info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 2 + 2 * info.fontHeight);
+		      if (!info.loaded) {
 		        s = "Loading sounds...";
-		        w = 4 * fontWidth + fm.stringWidth(s);
-		        h = fontHeight;
+		        w = 4 * info.fontWidth + info.fm.stringWidth(s);
+		        h = info.fontHeight;
 		        x = (d.width - w) / 2;
-		        y = 3 * d.height / 4 - fm.getMaxAscent();
-		        offGraphics.setColor(Color.black);
-		          offGraphics.fillRect(x, y, w, h);
-		        offGraphics.setColor(Color.gray);
-		        if (clipTotal > 0)
-		          offGraphics.fillRect(x, y, (int) (w * clipsLoaded / clipTotal), h);
-		        offGraphics.setColor(Color.white);
-		        offGraphics.drawRect(x, y, w, h);
-		        offGraphics.drawString(s, x + 2 * fontWidth, y + fm.getMaxAscent());
+		        y = 3 * d.height / 4 - info.fm.getMaxAscent();
+		        info.offGraphics.setColor(Color.black);
+		          info.offGraphics.fillRect(x, y, w, h);
+		        info.offGraphics.setColor(Color.gray);
+		        if (info.clipTotal > 0)
+		          info.offGraphics.fillRect(x, y, (int) (w * info.clipsLoaded / info.clipTotal), h);
+		        info.offGraphics.setColor(Color.white);
+		        info.offGraphics.drawRect(x, y, w, h);
+		        info.offGraphics.drawString(s, x + 2 * info.fontWidth, y + info.fm.getMaxAscent());
 		      }
 		      else {
 		        s = "Game Over";
-		        offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 4);
+		        info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 4);
 		        s = "'S' to Start";
-		        offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 4 + fontHeight);
+		        info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 4 + info.fontHeight);
 		      }
 		    }
-		    else if (Asteroids.paused) {
+		    else if (info.paused) {
 		      s = "Game Paused";
-		      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 4);
+		      info.offGraphics.drawString(s, (d.width - info.fm.stringWidth(s)) / 2, d.height / 4);
 		    }
 
 		    // Copy the off screen buffer to the screen.
 
-		    g.drawImage(offImage, 0, 0, (ImageObserver) this);
+		    g.drawImage(info.offImage, 0, 0, (ImageObserver) this);
 		  }
+		  
 }

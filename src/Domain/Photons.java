@@ -11,9 +11,9 @@ public class Photons extends AsteroidsSprite{
 
 		  int i;
 
-		  for (i = 0; i < Asteroids.MAX_SHOTS; i++)
+		  for (i = 0; i < info.MAX_SHOTS; i++)
 		    photons[i].active = false;
-		  Asteroids.photonIndex = 0;
+		  info.photonIndex = 0;
 		}
 
 		public void updatePhotons(AsteroidsSprite[] photons) {
@@ -22,7 +22,7 @@ public class Photons extends AsteroidsSprite{
 
 		  // Move any active photons. Stop it when its counter has expired.
 
-		  for (i = 0; i < Asteroids.MAX_SHOTS; i++)
+		  for (i = 0; i < info.MAX_SHOTS; i++)
 		    if (photons[i].active) {
 		      if (!photons[i].advance())
 		        photons[i].render();

@@ -27,12 +27,101 @@ public class Main extends Applet implements Runnable {
 
 	information info = new information();
 	UICreater uicreate = new UICreater();
+	KeyInputs keyInputs = new KeyInputs();
+	explode explode1 = new explode();
+	ship Ship = (ship) info.ship;
+	
+	public void updateShip(AsteroidsSprite fwdThruster, AsteroidsSprite revThruster, boolean playing, boolean left, boolean right, boolean up, boolean down, int hyperCounter, int shipCounter, int shipsLeft, int hyperCount) {
 
+	    double dx, dy, speed;
+
+	    if (!playing)
+	      return ;
+
+	    // Rotate the ship if left or right cursor key is down.
+
+	    if (left) {
+	    	Ship.angle += Ship.SHIP_ANGLE_STEP;
+	      if (Ship.angle > 2 * Math.PI)
+	    	  Ship.angle -= 2 * Math.PI;
+	    }
+	    if (right) {
+	    	Ship.angle -= Ship.SHIP_ANGLE_STEP;
+	      if (Ship.angle < 0)
+	    	  Ship.angle += 2 * Math.PI;
+	    }
+
+	    // Fire thrusters if up or down cursor key is down.
+
+	    dx = Ship.SHIP_SPEED_STEP * -Math.sin(Ship.angle);
+	    dy = Ship.SHIP_SPEED_STEP *  Math.cos(Ship.angle);
+	    if (up) {
+	    	Ship.deltaX += dx;
+	    	Ship.deltaY += dy;
+	    }
+	    if (down) {
+	    	Ship.deltaX -= dx;
+	    	Ship.deltaY -= dy;
+	    }
+
+	    // Don't let ship go past the speed limit.
+
+	    if (up || down) {
+	      speed = Math.sqrt(Ship.deltaX * Ship.deltaX + Ship.deltaY * Ship.deltaY);
+	      if (speed > Ship.MAX_SHIP_SPEED) {
+	        dx = Ship.MAX_SHIP_SPEED * -Math.sin(Ship.angle);
+	        dy = Ship.MAX_SHIP_SPEED *  Math.cos(Ship.angle);
+	        if (up)
+	        	Ship.deltaX = dx;
+	        else
+	        	Ship.deltaX = -dx;
+	        if (up)
+	        	Ship.deltaY = dy;
+	        else
+	        	Ship.deltaY = -dy;
+	      }
+	    }
+
+	    // Move the ship. If it is currently in hyperspace, advance the countdown.
+
+	    if (Ship.active) {
+	    	Ship.advance();
+	    	Ship.render();
+	      if (hyperCounter > 0)
+	        hyperCounter--;
+
+	      // Update the thruster sprites to match the ship sprite.
+
+	      fwdThruster.x = Ship.x;
+	      fwdThruster.y = Ship.y;
+	      fwdThruster.angle = Ship.angle;
+	      fwdThruster.render();
+	      revThruster.x = Ship.x;
+	      revThruster.y = Ship.y;
+	      revThruster.angle = Ship.angle;
+	      revThruster.render();
+	    }
+
+	    // Ship is exploding, advance the countdown or create a new ship if it is
+	    // done exploding. The new ship is added as though it were in hyperspace.
+	    // (This gives the player time to move the ship if it is in imminent
+	    // danger.) If that was the last ship, end the game.
+
+	    else
+	      if (--shipCounter <= 0)
+	        if (shipsLeft > 0) {
+	          Ship.initShip(revThruster, revThruster, down, null, hyperCount);
+	          hyperCounter = info.HYPER_COUNT;
+	        }
+	        else
+	          endGame();
+		
+	  }
   public String getAppletInfo() {
 
     // Return copyright information.
 
-    return(info.getCopyText());
+    return(info.copyText);
   }
   int     numStars;
   Point[] stars;
@@ -44,7 +133,7 @@ public class Main extends Applet implements Runnable {
 
     // Display copyright information.
 
-    System.out.println(info.getCopyText());
+    System.out.println(info.copyText);
 
     // Set up key event handling and set focus to applet window.
 
@@ -66,14 +155,14 @@ public class Main extends Applet implements Runnable {
     ((Graph) graph).getStars(stars);
     // Create shape for the ship sprite.
 
-    info.setShip(new ship());
+    info.ship = new ship();
     info.ship.shape.addPoint(0, -10);
     info.ship.shape.addPoint(7, 10);
     info.ship.shape.addPoint(-7, 10);
 
     // Create shapes for the ship thrusters.
 
-    info.setFwdThruster(new AsteroidsSprite() );
+    info.fwdThruster = new AsteroidsSprite() ;
     info.fwdThruster.shape.addPoint(0, 12);
     info.fwdThruster.shape.addPoint(-3, 16);
     info.fwdThruster.shape.addPoint(0, 26);
@@ -90,7 +179,7 @@ public class Main extends Applet implements Runnable {
 
     // Create shape for each photon sprites.
 
-    for (i = 0; i < info.getMaxShots(); i++) {
+    for (i = 0; i < info.MAX_SHOTS; i++) {
       info.photons[i] = new AsteroidsSprite();
       info.photons[i].shape.addPoint(1, 1);
       info.photons[i].shape.addPoint(1, -1);
@@ -125,19 +214,19 @@ public class Main extends Applet implements Runnable {
 
     // Create asteroid sprites.
 
-    for (i = 0; i < info.getMaxRocks(); i++)
+    for (i = 0; i < info.MAX_ROCKS; i++)
     	info.asteroids[i] = new AsteroidsSprite();
 
     // Create explosion sprites.
 
-    for (i = 0; i < info.getMaxScrap(); i++)
+    for (i = 0; i < info.MAX_SCRAP; i++)
     	info.explosions[i] = new AsteroidsSprite();
 
     // Initialize game data and put us in 'game over' mode.
 
-    highScore = 0;
-    sound = true;
-    detail = true;
+    info.highScore = 0;
+    info.sound = true;
+    info.detail = true;
     initGame();
     endGame();
   }
@@ -146,53 +235,53 @@ public class Main extends Applet implements Runnable {
 
     // Initialize game data and sprites.
 
-    score = 0;
-    shipsLeft = MAX_SHIPS;
-    asteroidsSpeed = MIN_ROCK_SPEED;
-    newShipScore = NEW_SHIP_POINTS;
-    newUfoScore = NEW_UFO_POINTS;
-    thrustersPlaying = ((ship) ship).initShip(fwdThruster,revThruster,loaded,thrustersSound ,hyperCounter );
-    ((Photons) photon).initPhotons(photons);
-    ((ufo) ufo).stopUfo();
-    ((missle) missle).stopMissle();
-    ((Asteroid) asteroid).initAsteroids(asteroids,asteroidIsSmall);
-    explosionIndex  = explode.initExplosions(explosions);
-    playing = true;
-    paused = false;
-    photonTime = System.currentTimeMillis();
+	  info.score = 0;
+	  info.shipsLeft = info.MAX_SHIPS;
+	  info.asteroidsSpeed = info.MIN_ROCK_SPEED;
+	  info.newShipScore = info.NEW_SHIP_POINTS;
+	  info.newUfoScore = info.NEW_UFO_POINTS;
+	  info.thrustersPlaying = ((ship) info.ship).initShip(info.fwdThruster,info.revThruster,info.loaded,info.thrustersSound ,info.hyperCounter );
+    ((Photons) info.photon).initPhotons(info.photons);
+    ((ufo) info.ufo).stopUfo();
+    ((missle) info.missle).stopMissle();
+    ((Asteroid) info.asteroid).initAsteroids(info.asteroids,info.asteroidIsSmall);
+    info.explosionIndex  = explode1.initExplosions(info.explosions);
+    info.playing = true;
+    info.paused = false;
+    info.photonTime = System.currentTimeMillis();
   }
 
   public void endGame() {
 
     // Stop ship, flying saucer, guided missle and associated sounds.
 
-    playing = false;
-    ((ship) ship).stopShip();
-    ((ufo) ufo).stopUfo();
-    ((missle) missle).stopMissle();
+	  info.playing = false;
+    ((ship) info.ship).stopShip();
+    ((ufo) info.ufo).stopUfo();
+    ((missle) info.missle).stopMissle();
   }
 
   public void start() {
 
-    if (loopThread == null) {
-      loopThread = new Thread(this);
-      loopThread.start();
+    if (info.loopThread == null) {
+    	info.loopThread = new Thread(this);
+    	info.loopThread.start();
     }
-    if (!loaded && loadThread == null) {
-      loadThread = new Thread(this);
-      loadThread.start();
+    if (!info.loaded && info.loadThread == null) {
+    	info.loadThread = new Thread(this);
+    	info.loadThread.start();
     }
   }
 
   public void stop() {
 
-    if (loopThread != null) {
-      loopThread.stop();
-      loopThread = null;
+    if (info.loopThread != null) {
+    	info.loopThread.stop();
+    	info.loopThread = null;
     }
-    if (loadThread != null) {
-      loadThread.stop();
-      loadThread = null;
+    if (info.loadThread != null) {
+    	info.loadThread.stop();
+    	info.loadThread = null;
     }
   }
   AudioClip1 audio = new AudioClip1();
@@ -208,63 +297,63 @@ public class Main extends Applet implements Runnable {
 
     // Run thread for loading sounds.
 
-    if (!loaded && Thread.currentThread() == loadThread) {
+    if (!info.loaded && Thread.currentThread() == info.loadThread) {
       audio.loadSounds();
-      crashSound = audio.getCrashSound();
-      explosionSound = audio.getExplosionSound();
-      fireSound = audio.getFireSound();
-      missleSound = audio.getMissleSound();
-      saucerSound = audio.getSaucerSound();
-      thrustersSound = audio.getThrustersSound();
-      warpSound = audio.getWarpSound();
-      clipsLoaded = audio.getClipsLoaded();
-      clipTotal = audio.getClipTotal();
-      loaded = true;
-      loadThread.stop();
+      info.crashSound = audio.getCrashSound();
+      info.explosionSound = audio.getExplosionSound();
+      info.fireSound = audio.getFireSound();
+      info.missleSound = audio.getMissleSound();
+      info.saucerSound = audio.getSaucerSound();
+      info.thrustersSound = audio.getThrustersSound();
+      info.warpSound = audio.getWarpSound();
+      info.clipsLoaded = audio.getClipsLoaded();
+      info.clipTotal = audio.getClipTotal();
+      info.loaded = true;
+      info.loadThread.stop();
     }
 
     // This is the main loop.
 
-    while (Thread.currentThread() == loopThread) {
+    while (Thread.currentThread() == info.loopThread) {
 
-      if (!paused) {
+      if (!info.paused) {
 
         // Move and process all sprites.
     	  
-    	((ship) ship).updateShip(fwdThruster,revThruster,playing,left,right, up ,down,hyperCounter,shipCounter,shipsLeft,HYPER_COUNT);
-        ((Photons) photon).updatePhotons(photons);
-        ((ufo) ufo).updateUfo(photons,missle,explosion);
-        ((missle) missle).updateMissle(photons,ship,ufo,explosion);
-        ((Asteroid) asteroid).updateAsteroids(asteroids,photons,asteroidIsSmall,ship,ufo,missle,explosions);
-        explosions = explode.updateExplosions(explosions,explosionCounter);
+    	updateShip(info.fwdThruster,info.revThruster,info.playing,info.left,info.right, info.up ,info.down,info.hyperCounter,info.shipCounter,info.shipsLeft,info.HYPER_COUNT);
+        ((Photons) info.photon).updatePhotons(info.photons);
+        ((ufo) info.ufo).updateUfo(info.photons,info.missle,info.explosion);
+        ((missle) info.missle).updateMissle(info.photons,info.ship,info.ufo,info.explosion);
+        ((Asteroid) info.asteroid).updateAsteroids(info.asteroids,info.photons,info.asteroidIsSmall,info.ship,info.ufo,info.missle,info.explosions);
+        info.explosions = explode1.updateExplosions(info.explosions,info.explosionCounter);
 
         // Check the score and advance high score, add a new ship or start the
         // flying saucer as necessary.
 
-        if (score > highScore)
-          highScore = score;
-        if (score > newShipScore) {
-          newShipScore += NEW_SHIP_POINTS;
-          shipsLeft++;
+        if (info.score > info.highScore)
+        	info.highScore = info.score;
+        if (info.score > info.newShipScore) {
+        	info.newShipScore += info.NEW_SHIP_POINTS;
+        	info.shipsLeft++;
         }
-        if (playing && score > newUfoScore && !ufo.active) {
-          newUfoScore += NEW_UFO_POINTS;
-          ufoPassesLeft = UFO_PASSES;
-          ((ufo) ufo).initUfo();
+        if (info.playing && info.score > info.newUfoScore && !info.ufo.active) {
+        	info.newUfoScore += info.NEW_UFO_POINTS;
+        	info.ufoPassesLeft = info.UFO_PASSES;
+          ((ufo) info.ufo).initUfo();
         }
 
         // If all asteroids have been destroyed create a new batch.
 
-        if (asteroidsLeft <= 0)
-            if (--asteroidsCounter <= 0)
-            	((Asteroid) asteroid).initAsteroids(asteroids,asteroidIsSmall);
+        if (info.asteroidsLeft <= 0)
+            if (--info.asteroidsCounter <= 0)
+            	((Asteroid) info.asteroid).initAsteroids(info.asteroids,info.asteroidIsSmall);
       }
 
       // Update the screen and set the timer for the next loop.
 
       repaint();
       try {
-        startTime += DELAY;
+        startTime += info.DELAY;
         Thread.sleep(Math.max(0, startTime - System.currentTimeMillis()));
       }
       catch (InterruptedException e) {

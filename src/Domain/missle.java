@@ -17,10 +17,10 @@ public class missle extends AsteroidsSprite {
 	    deltaX = 0.0;
 	    deltaY = 0.0;
 	    render();
-	    Asteroids.missleCounter = Asteroids.MISSLE_COUNT;
-	    if (Asteroids.sound)
-	      Asteroids.missleSound.loop();
-	    Asteroids.misslePlaying = true;
+	    info.missleCounter = info.MISSLE_COUNT;
+	    if (info.sound)
+	    	info.missleSound.loop();
+	    info.misslePlaying = true;
 	  }
 
 	  public void updateMissle(AsteroidsSprite[] photons, AsteroidsSprite ship, AsteroidsSprite ufo, AsteroidsSprite explosion) {
@@ -31,24 +31,24 @@ public class missle extends AsteroidsSprite {
 	    // it when its counter has expired.
 
 	    if (active) {
-	      if (--Asteroids.missleCounter <= 0)
+	      if (--info.missleCounter <= 0)
 	        stopMissle();
 	      else {
 	        guideMissle(ship);
 	        advance();
 	        render();
-	        for (i = 0; i < Asteroids.MAX_SHOTS; i++)
+	        for (i = 0; i < info.MAX_SHOTS; i++)
 	          if (photons[i].active && isColliding(photons[i])) {
-	            if (Asteroids.sound)
-	            	Asteroids.crashSound.play();
+	            if (info.sound)
+	            	info.crashSound.play();
 	            ((explode) explosion).explode(explosion, photons);
 	            stopMissle();
-	            Asteroids.score += Asteroids.MISSLE_POINTS;
+	            info.score += info.MISSLE_POINTS;
 	          }
 	        if (active && ship.active &&
-	        		Asteroids.hyperCounter <= 0 && ship.isColliding(this)) {
-	          if (Asteroids.sound)
-	        	  Asteroids.crashSound.play();
+	        		info.hyperCounter <= 0 && ship.isColliding(this)) {
+	          if (info.sound)
+	        	  info.crashSound.play();
 	          ((explode) explosion).explode(explosion, photons);
 	          ((ship) ship).stopShip();
 	          ((ufo) ufo).stopUfo();
@@ -62,7 +62,7 @@ public class missle extends AsteroidsSprite {
 
 	    double dx, dy, angle;
 
-	    if (!ship.active || Asteroids.hyperCounter > 0)
+	    if (!ship.active || info.hyperCounter > 0)
 	      return;
 
 	    // Find the angle needed to hit the ship.
@@ -91,17 +91,17 @@ public class missle extends AsteroidsSprite {
 
 	    // Change the missle's angle so that it points toward the ship.
 
-	    deltaX = 0.75 * Asteroids.MAX_ROCK_SPEED * -Math.sin(angle);
-	    deltaY = 0.75 * Asteroids.MAX_ROCK_SPEED *  Math.cos(angle);
+	    deltaX = 0.75 * info.MAX_ROCK_SPEED * -Math.sin(angle);
+	    deltaY = 0.75 * info.MAX_ROCK_SPEED *  Math.cos(angle);
 	  }
 
 	  public void stopMissle() {
 
 	    active = false;
-	    Asteroids.missleCounter = 0;
-	    if (Asteroids.loaded)
-	    	Asteroids.missleSound.stop();
-	    Asteroids. misslePlaying = false;
+	    info.missleCounter = 0;
+	    if (info.loaded)
+	    	info.missleSound.stop();
+	    info. misslePlaying = false;
 	  }
 
 }
